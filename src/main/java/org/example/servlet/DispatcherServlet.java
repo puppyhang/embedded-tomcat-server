@@ -6,8 +6,10 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,6 +39,16 @@ public class DispatcherServlet extends AbstractServlet {
 
         Object adapter = resolveAdapter(request);
 
+        HttpSession session = request.getSession(false);
+
+        if (session == null) {
+            System.out.println("session还没有创建");
+            printHeader(response);
+            session = request.getSession(true);
+            System.out.println("session创建完毕" + session.getId());
+            printHeader(response);
+        }
+
         if (handler != null && adapter != null) {
             returnResponse(handler, adapter, response);
         } else {
@@ -47,6 +59,16 @@ public class DispatcherServlet extends AbstractServlet {
             }
         }
 
+    }
+
+    private void printHeader(HttpServletResponse response) {
+        if (response.getHeaderNames().size() == 0) {
+            System.out.println("没有headers");
+        } else {
+            for (String headerName : response.getHeaderNames()) {
+                System.out.println(headerName + ":" + response.getHeader(headerName));
+            }
+        }
     }
 
     private void returnResponse(Object handler, Object adapter, HttpServletResponse response) throws IOException {
